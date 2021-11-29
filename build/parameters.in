@@ -5,7 +5,7 @@ testing              ! Model name prefix (model names: prefix_vp, prefix_rho)
 20.                  ! Wavelet's peak frequency
 0.0002               ! Time step
 10000                ! Number of time steps
-2250                  ! Source location (element number)
+2250                 ! Source location (element number)
 4                    ! Source location (gll point)
 10                   ! Snapshot interval
 1                    ! [1/2/3/4] 1: Free surface, 2: Rigid wall, 3: Periodic, 4: Sponge 
