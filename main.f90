@@ -12,33 +12,38 @@ PROGRAM HDG
     
     TYPE SETup
         SEQUENCE
-        INTEGER                                         :: N, ne, nt, esrc, gsrc, ngll, isnap
-        REAL(KIND=8)                                    :: h, f0, dt, Jc, Jci
-        REAL(KIND=8), DIMENSION(:),   ALLOCATABLE       :: v1D, rho1D, src, xi, wi
-        REAL(KIND=8), DIMENSION(:,:), ALLOCATABLE       :: lprime
-        INTEGER, dimension(:,:), allocatable            :: Cij
+        INTEGER                                         :: N, nt, esrc, gsrc, isnap
+        REAL(kind=8)                                    :: h, f0, dt, Jc, Jci
+        REAL(kind=8), DIMENSION(:),   ALLOCATABLE       :: v1D, rho1D, src, xi, wi
+        REAL(kind=8), DIMENSION(:,:), ALLOCATABLE       :: lprime
+        integer, dimension(:,:), allocatable            :: Cij
 
     END TYPE
 
     TYPE semProblem
         SEQUENCE
-        REAL(KIND=8), dimension(:),   ALLOCATABLE :: mu1Dgll, v1Dgll, rho1Dgll, M, xgll, u, uold, unew, F, &
-                                                     udot, udotnew, uddot, uddotnew, sigma, recsigma, tauL, Me 
-        REAL(KIND=8), dimension(:,:), ALLOCATABLE :: MINv, Kg, Ke, Uout, Udotout, sigmaout
-    END TYPE
+        REAL(kind=8), dimension(:),   ALLOCATABLE       :: mu1Dgll, v1Dgll, rho1Dgll, M, xgll, u, uold, unew, F, &
+                                                           udot, udotnew, uddot, uddotnew, sigma, recsigma, tauL, Me 
+        REAL(kind=8), dimension(:,:), ALLOCATABLE       :: Minv, Kg, Ke, Uout, Udotout, sigmaout
+        INTEGER                                         :: ne, ngll
+    END TYPE   
 
     TYPE dgProblem
         SEQUENCE
-        REAL(KIND=8), dimension(:,:), ALLOCATABLE :: v1D, rho1D, mu1Dgll, v1Dgll, rho1Dgll
+        REAL(kind=8), DIMENSION(:), ALLOCATABLE                :: Z
+        REAL(KIND=8), dimension(:,:), ALLOCATABLE              :: v1D, rho1D, mu1Dgll, v1Dgll, rho1Dgll, xgll, Minv, &
+                                                                  Ke, sigma, v
+        real(kind=8), dimension(:,:,:), allocatable            :: Al, Ar, u, unew, k1, k2, flux, source
+        INTEGER                                                :: ne, ngll
     END TYPE
 
     TYPE(SETup)                                                :: SET
     TYPE(semProblem)                                           :: SEM
+    TYPE(dgProblem)                                            :: DG
     REAL (KIND=8)                                              :: sum, CFL, mINdist, lambdamIN, taper
     REAL (KIND=8)                                              :: time, t_cpu_0, t_cpu_1, t_cpu, tmp, tmpBC, attConst, sd
                                                             
     REAL (KIND=8), dimension(:), allocatable                   ::  g
-    REAL (KIND=8), dimension(:), allocatable                   :: temp1, temp2, temp3 
     INTEGER                                                    :: i, j, k, l, it, el, reclsnaps
     INTEGER                                                    :: ir, t0, t1, bc, sbc, gWidth, IC
     character(len=40)                                          :: filename, filecheck, outname, modnameprefix
@@ -63,8 +68,8 @@ PROGRAM HDG
     CALL cpu_time(t_cpu_0)
     CALL system_clock(count=t0, count_rate=ir)
 
-    outname = "OUTPUT/snapshots.bIN"
-    filename          = "parameters.IN"
+    outname = "OUTPUT/snapshots.bin"
+    filename          = "parameters.in"
 
 
     WRITE(*,*) "##########################################"
@@ -94,7 +99,8 @@ PROGRAM HDG
     OPEN (2, file=filename, status = 'old')
     READ(2,*) modnameprefix
     READ(2,*) SET%N
-    READ(2,*) SET%ne
+    READ(2,*) SEM%ne
+    READ(2,*) DG%ne
     READ(2,*) SET%h
     READ(2,*) SET%f0
     READ(2,*) SET%dt
@@ -111,7 +117,7 @@ PROGRAM HDG
     CLOSE(2)
 
     PRINT*,"Polynomial order          -> ",SET%N
-    PRINT*,"Number of elements        -> ",SET%ne
+    PRINT*,"Number of elements        -> ",SEM%ne
     PRINT*,"Element size              -> ",SET%h
     PRINT*,"Wavelet's peak frequency  -> ",SET%f0
     PRINT*,"Time step                 -> ",SET%dt
@@ -120,16 +126,17 @@ PROGRAM HDG
     PRINT*,"Snapshot INterval         -> ",SET%isnap
 
     
-    SET%ngll  = SET%N * SET%ne + 1                                  ! Total GLL poINts
+    SEM%ngll  = SET%N * SEM%ne + 1                                  ! Total GLL poINts
+    DG%ngll   = (SET%N + 1) * DG%ne 
     SET%Jc    = SET%h / 2                                           ! Jacobian for structured 1D mesh
     SET%Jci   = 1 / SET%Jc                                          ! Jacobian INverse
 
 
-    ALLOCATE(SET%Cij(SET%N+1,SET%ne))                               ! Connectivity matrix
+    ALLOCATE(SET%Cij(SET%N+1,SEM%ne))                               ! Connectivity matrix
     ALLOCATE(SET%xi(SET%N+1))                                       ! GLL poINts
     ALLOCATE(SET%wi(SET%N+1))                                       ! GLL Quadrature weights
-    ALLOCATE(SET%v1D(SET%ne))                                       ! 1D velocity model IN elements
-    ALLOCATE(SET%rho1D(SET%ne))                                     ! Density velocity model IN elements
+    ALLOCATE(SET%v1D(SEM%ne))                                       ! 1D velocity model IN elements
+    ALLOCATE(SET%rho1D(SEM%ne))                                     ! Density velocity model IN elements
     ALLOCATE(SET%lprime(SET%N+1,SET%N+1))                           ! Dervatives of Lagrange polynomials
 
     !##########################################
@@ -137,40 +144,99 @@ PROGRAM HDG
     !##########################################
 
 
-    ALLOCATE(SEM%rho1Dgll(SET%ngll))                                        ! 1D density model mapped
-    ALLOCATE(SEM%v1Dgll(SET%ngll))                                          ! 1D velocity mapped
-    ALLOCATE(SEM%M(SET%ngll))                                               ! Global mass matrix IN vector form
-    ALLOCATE(SEM%MINv(SET%ngll,SET%ngll))                                   ! INverse of the mass matrix
+    ALLOCATE(SEM%rho1Dgll(SEM%ngll))                                        ! 1D density model mapped
+    ALLOCATE(SEM%v1Dgll(SEM%ngll))                                          ! 1D velocity mapped
+    ALLOCATE(SEM%M(SEM%ngll))                                               ! Global mass matrix IN vector form
+    ALLOCATE(SEM%MINv(SEM%ngll,SEM%ngll))                                   ! INverse of the mass matrix
     ALLOCATE(SEM%Me(SET%N+1))                                               ! Elemental mass matrix
-    ALLOCATE(SEM%Kg(SET%ngll,SET%ngll))                                     ! Global stIFness matrix
+    ALLOCATE(SEM%Kg(SEM%ngll,SEM%ngll))                                     ! Global stIFness matrix
     ALLOCATE(SEM%Ke(SET%N+1,SET%N+1))                                       ! Elemental stIFness matrix
-    ALLOCATE(SEM%u(SET%ngll))                                               ! Displacement vector at time t
-    ALLOCATE(SEM%unew(SET%ngll),&                                           ! displacement vecotr at time t - dt
-             SEM%uddotnew(SET%ngll), & 
-             SEM%udotnew(SET%ngll))
-    ALLOCATE(SEM%uddot(SET%ngll),    &
-             SEM%udot(SET%ngll), SEM%sigma(SET%ngll))
-    ALLOCATE(SEM%uold(SET%ngll))                                            ! displacement vector at time t + dt
+    ALLOCATE(SEM%u(SEM%ngll))                                               ! Displacement vector at time t
+    ALLOCATE(SEM%unew(SEM%ngll),&                                           ! displacement vecotr at time t - dt
+             SEM%uddotnew(SEM%ngll), & 
+             SEM%udotnew(SEM%ngll))
+    ALLOCATE(SEM%uddot(SEM%ngll),    &
+             SEM%udot(SEM%ngll), SEM%sigma(SEM%ngll))
+    ALLOCATE(SEM%uold(SEM%ngll))                                            ! displacement vector at time t + dt
     ALLOCATE(SET%src(SET%nt))                                               ! Source time FUNCTION
-    ALLOCATE(SEM%F(SET%ngll))                                               ! External force
-    ALLOCATE(SEM%Uout(NINT(REAL(SET%nt/SET%isnap)),SET%ngll))               ! Snapshots
-    ALLOCATE(SEM%Udotout(NINT(REAL(SET%nt/SET%isnap)),SET%ngll), & 
-             SEM%sigmaout(NINT(REAL(SET%nt/SET%isnap)),SET%ngll))
-    ALLOCATE(SEM%mu1Dgll(SET%ngll))                                         ! Shear modulus mapped
-    ALLOCATE(SEM%xgll(SET%ngll))                                            ! Array for global mappINg
-    ALLOCATE(g(SET%ngll))
-    ALLOCATE(SEM%tauL(SET%ngll), SEM%recsigma(SET%nt))
+    ALLOCATE(SEM%F(SEM%ngll))                                               ! External force
+    ALLOCATE(SEM%Uout(NINT(REAL(SET%nt/SET%isnap)),SEM%ngll))               ! Snapshots
+    ALLOCATE(SEM%Udotout(NINT(REAL(SET%nt/SET%isnap)),SEM%ngll), & 
+             SEM%sigmaout(NINT(REAL(SET%nt/SET%isnap)),SEM%ngll))
+    ALLOCATE(SEM%mu1Dgll(SEM%ngll))                                         ! Shear modulus mapped
+    ALLOCATE(SEM%xgll(SEM%ngll))                                            ! Array for global mappINg
+    ALLOCATE(g(SEM%ngll))
+    ALLOCATE(SEM%tauL(SEM%ngll), SEM%recsigma(SET%nt))
    
+
+    !##########################################
+    !############ DG SOLVER INIT  #############
+    !##########################################
+    ALLOCATE(DG%Z(DG%ne))                                                                 ! Impepdences   
+    ALLOCATE(DG%xgll(DG%ne,SET%N+1))                                                      ! Array for global mapping
+    ALLOCATE(DG%Minv(SET%N+1,SET%N+1))                                                    ! Elemental mass matrix
+    ALLOCATE(DG%Ke(SET%N+1,SET%N+1))                                                      ! Elemental stifness matrix
+    ALLOCATE(DG%Ar(DG%ne,2,2),DG%Al(DG%ne,2,2))                                           ! Wave PDE Coefficient Matrix
+    ALLOCATE(DG%u(DG%ne,SET%N+1,2),DG%unew(DG%ne,SET%N+1,2))                              ! Solution fields
+    ALLOCATE(DG%k1(DG%ne,SET%N+1,2),DG%k2(DG%ne,SET%N+1,2),DG%source(DG%ne,SET%N+1,2))    ! RK
+    ALLOCATE(DG%flux(DG%ne,SET%N+1,2))                                                    ! Flux matrix
+    ALLOCATE(DG%sigma(NINT(SET%nt/REAL(SET%isnap)),DG%ngll),  &                           ! Stretched solution fields
+             DG%v(NINT(SET%nt/REAL(SET%isnap)),DG%ngll))
+
     
-    SET%Cij  = connectivity_matrix(SET%N,SET%ne)
+    SET%Cij  = connectivity_matrix(SET%N,SEM%ne)
 
     CALL lagrangeprime(SET%N,SET%lprime)                                    ! Lagrange polynomials derivatives
     CALL zwgljd(SET%xi,SET%wi,SET%N+1,0.,0.)                                ! GettINg GLL poINts and weights
-    CALL READmodelfiles1D(SET%v1D, SET%rho1D, SET%ne,modnameprefix)         ! READINg model files
-    CALL shapefunc(SET%N,SET%h,SET%ne,SET%Cij,SEM%xgll)                     ! Global domaIN mappINg
-    CALL mapmodel(SET%N,SET%ne,SET%rho1D,SET%v1D,SEM%rho1Dgll,SEM%v1Dgll)   ! MappINg models
+    CALL READmodelfiles1D(SET%v1D, SET%rho1D, SEM%ne,modnameprefix)         ! READINg model files
+    CALL shapefunc(SET%N,SET%h,SEM%ne,SET%Cij,SEM%xgll)                     ! Global domaIN mappINg
+    CALL shapefuncDG(SET%N,SET%h,DG%ne, DG%xgll)                            ! Global domain mapping
+    CALL mapmodel(SET%N,SEM%ne,SET%rho1D,SET%v1D,SEM%rho1Dgll,SEM%v1Dgll)   ! MappINg models
     CALL ricker(SET%nt,SET%f0,SET%dt,SET%src)                               ! Source time FUNCTION
 
     CALL semSolve(SET,SEM)
+
+
+    write(*,*) "##########################################"
+    write(*,*) "######### Write solution binary ##########"
+    write(*,*) "######### Solution in OUTPUT/   ##########"
+    write(*,*) "##########################################"
+
+    outname = "OUTPUT/SEM_snapshots_U.bin"
+
+    inquire(iolength=reclsnaps) SEM%Uout
+    open(15,file=outname,access="direct",recl=reclsnaps)
+    write(15,rec=1) SEM%Uout
+    close(15)
+
+
+    outname = "OUTPUT/SEM_snapshots_V.bin"
+
+    open(17,file=outname,access="direct",recl=reclsnaps)
+    write(17,rec=1) SEM%Udotout
+    close(17)
+
+
+    outname = "OUTPUT/SEM_snapshots_Sigma.bin"
+
+    open(18,file=outname,access="direct",recl=reclsnaps)
+    write(18,rec=1) SEM%sigmaout
+    close(18)
+
+   
+    ! Temps elapsed final.
+    call system_clock(count=t1, count_rate=ir)
+    time = real(t1 - t0,kind=8) / real(ir,kind=8)
+
+    call cpu_time(t_cpu_1)
+    t_cpu = t_cpu_1 - t_cpu_0
+
+    write(*,*) "##########################################"
+    write(*,*) "######### TIME:                 ##########"
+    print '(//3X,"Elapsed Time        : ",1PE10.3," [s]",/ &
+            &,3X,"CPU Time            : ",1PE10.3," [s]",//)', &
+            & time,t_cpu
+    write(*,*) "##########################################"
+
 
 END PROGRAM
