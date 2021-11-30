@@ -153,6 +153,30 @@ connectivity_matrix.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/connectivity_matrix.f90.s
 .PHONY : connectivity_matrix.f90.s
 
+dgSolve.o: dgSolve.f90.o
+.PHONY : dgSolve.o
+
+# target to build an object file
+dgSolve.f90.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/dgSolve.f90.o
+.PHONY : dgSolve.f90.o
+
+dgSolve.i: dgSolve.f90.i
+.PHONY : dgSolve.i
+
+# target to preprocess a source file
+dgSolve.f90.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/dgSolve.f90.i
+.PHONY : dgSolve.f90.i
+
+dgSolve.s: dgSolve.f90.s
+.PHONY : dgSolve.s
+
+# target to generate assembly for a file
+dgSolve.f90.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/dgSolve.f90.s
+.PHONY : dgSolve.f90.s
+
 gll_library.o: gll_library.f90.o
 .PHONY : gll_library.o
 
@@ -393,6 +417,30 @@ shapefunc.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/shapefunc.f90.s
 .PHONY : shapefunc.f90.s
 
+shapefuncDG.o: shapefuncDG.f90.o
+.PHONY : shapefuncDG.o
+
+# target to build an object file
+shapefuncDG.f90.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/shapefuncDG.f90.o
+.PHONY : shapefuncDG.f90.o
+
+shapefuncDG.i: shapefuncDG.f90.i
+.PHONY : shapefuncDG.i
+
+# target to preprocess a source file
+shapefuncDG.f90.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/shapefuncDG.f90.i
+.PHONY : shapefuncDG.f90.i
+
+shapefuncDG.s: shapefuncDG.f90.s
+.PHONY : shapefuncDG.s
+
+# target to generate assembly for a file
+shapefuncDG.f90.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/shapefuncDG.f90.s
+.PHONY : shapefuncDG.f90.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -405,6 +453,9 @@ help:
 	@echo "... connectivity_matrix.o"
 	@echo "... connectivity_matrix.i"
 	@echo "... connectivity_matrix.s"
+	@echo "... dgSolve.o"
+	@echo "... dgSolve.i"
+	@echo "... dgSolve.s"
 	@echo "... gll_library.o"
 	@echo "... gll_library.i"
 	@echo "... gll_library.s"
@@ -435,6 +486,9 @@ help:
 	@echo "... shapefunc.o"
 	@echo "... shapefunc.i"
 	@echo "... shapefunc.s"
+	@echo "... shapefuncDG.o"
+	@echo "... shapefuncDG.i"
+	@echo "... shapefuncDG.s"
 .PHONY : help
 
 

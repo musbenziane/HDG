@@ -53,5 +53,15 @@
   "directory": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build",
   "command": "/usr/bin/f95   -fopenmp -Wall -O0 -g3 -c \"/home/mus/Documents/Modelling/Modelling Projects Git/HDG/semSolve.f90\" -o CMakeFiles/SEM1D.dir/semSolve.f90.o",
   "file": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/semSolve.f90"
+},
+{
+  "directory": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build",
+  "command": "/usr/bin/f95   -fopenmp -Wall -O0 -g3 -c \"/home/mus/Documents/Modelling/Modelling Projects Git/HDG/shapefuncDG.f90\" -o CMakeFiles/SEM1D.dir/shapefuncDG.f90.o",
+  "file": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/shapefuncDG.f90"
+},
+{
+  "directory": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build",
+  "command": "/usr/bin/f95   -fopenmp -Wall -O0 -g3 -c \"/home/mus/Documents/Modelling/Modelling Projects Git/HDG/dgSolve.f90\" -o CMakeFiles/SEM1D.dir/dgSolve.f90.o",
+  "file": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/dgSolve.f90"
 }
 ]
