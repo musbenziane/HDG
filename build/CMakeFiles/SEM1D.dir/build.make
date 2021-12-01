@@ -238,6 +238,45 @@ CMakeFiles/SEM1D.dir/dgSolve.f90.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling Fortran source to assembly CMakeFiles/SEM1D.dir/dgSolve.f90.s"
 	/usr/bin/f95 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -S "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/dgSolve.f90" -o CMakeFiles/SEM1D.dir/dgSolve.f90.s
 
+CMakeFiles/SEM1D.dir/semDefine.f90.o: CMakeFiles/SEM1D.dir/flags.make
+CMakeFiles/SEM1D.dir/semDefine.f90.o: ../semDefine.f90
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_14) "Building Fortran object CMakeFiles/SEM1D.dir/semDefine.f90.o"
+	/usr/bin/f95 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -c "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/semDefine.f90" -o CMakeFiles/SEM1D.dir/semDefine.f90.o
+
+CMakeFiles/SEM1D.dir/semDefine.f90.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing Fortran source to CMakeFiles/SEM1D.dir/semDefine.f90.i"
+	/usr/bin/f95 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -E "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/semDefine.f90" > CMakeFiles/SEM1D.dir/semDefine.f90.i
+
+CMakeFiles/SEM1D.dir/semDefine.f90.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling Fortran source to assembly CMakeFiles/SEM1D.dir/semDefine.f90.s"
+	/usr/bin/f95 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -S "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/semDefine.f90" -o CMakeFiles/SEM1D.dir/semDefine.f90.s
+
+CMakeFiles/SEM1D.dir/dgDefine.f90.o: CMakeFiles/SEM1D.dir/flags.make
+CMakeFiles/SEM1D.dir/dgDefine.f90.o: ../dgDefine.f90
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_15) "Building Fortran object CMakeFiles/SEM1D.dir/dgDefine.f90.o"
+	/usr/bin/f95 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -c "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/dgDefine.f90" -o CMakeFiles/SEM1D.dir/dgDefine.f90.o
+
+CMakeFiles/SEM1D.dir/dgDefine.f90.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing Fortran source to CMakeFiles/SEM1D.dir/dgDefine.f90.i"
+	/usr/bin/f95 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -E "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/dgDefine.f90" > CMakeFiles/SEM1D.dir/dgDefine.f90.i
+
+CMakeFiles/SEM1D.dir/dgDefine.f90.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling Fortran source to assembly CMakeFiles/SEM1D.dir/dgDefine.f90.s"
+	/usr/bin/f95 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -S "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/dgDefine.f90" -o CMakeFiles/SEM1D.dir/dgDefine.f90.s
+
+CMakeFiles/SEM1D.dir/compute_flux.f90.o: CMakeFiles/SEM1D.dir/flags.make
+CMakeFiles/SEM1D.dir/compute_flux.f90.o: ../compute_flux.f90
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_16) "Building Fortran object CMakeFiles/SEM1D.dir/compute_flux.f90.o"
+	/usr/bin/f95 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -c "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/compute_flux.f90" -o CMakeFiles/SEM1D.dir/compute_flux.f90.o
+
+CMakeFiles/SEM1D.dir/compute_flux.f90.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing Fortran source to CMakeFiles/SEM1D.dir/compute_flux.f90.i"
+	/usr/bin/f95 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -E "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/compute_flux.f90" > CMakeFiles/SEM1D.dir/compute_flux.f90.i
+
+CMakeFiles/SEM1D.dir/compute_flux.f90.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling Fortran source to assembly CMakeFiles/SEM1D.dir/compute_flux.f90.s"
+	/usr/bin/f95 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -S "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/compute_flux.f90" -o CMakeFiles/SEM1D.dir/compute_flux.f90.s
+
 # Object files for target SEM1D
 SEM1D_OBJECTS = \
 "CMakeFiles/SEM1D.dir/main.f90.o" \
@@ -252,7 +291,10 @@ SEM1D_OBJECTS = \
 "CMakeFiles/SEM1D.dir/gll_library.f90.o" \
 "CMakeFiles/SEM1D.dir/semSolve.f90.o" \
 "CMakeFiles/SEM1D.dir/shapefuncDG.f90.o" \
-"CMakeFiles/SEM1D.dir/dgSolve.f90.o"
+"CMakeFiles/SEM1D.dir/dgSolve.f90.o" \
+"CMakeFiles/SEM1D.dir/semDefine.f90.o" \
+"CMakeFiles/SEM1D.dir/dgDefine.f90.o" \
+"CMakeFiles/SEM1D.dir/compute_flux.f90.o"
 
 # External object files for target SEM1D
 SEM1D_EXTERNAL_OBJECTS =
@@ -270,9 +312,12 @@ SEM1D: CMakeFiles/SEM1D.dir/gll_library.f90.o
 SEM1D: CMakeFiles/SEM1D.dir/semSolve.f90.o
 SEM1D: CMakeFiles/SEM1D.dir/shapefuncDG.f90.o
 SEM1D: CMakeFiles/SEM1D.dir/dgSolve.f90.o
+SEM1D: CMakeFiles/SEM1D.dir/semDefine.f90.o
+SEM1D: CMakeFiles/SEM1D.dir/dgDefine.f90.o
+SEM1D: CMakeFiles/SEM1D.dir/compute_flux.f90.o
 SEM1D: CMakeFiles/SEM1D.dir/build.make
 SEM1D: CMakeFiles/SEM1D.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_14) "Linking Fortran executable SEM1D"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_17) "Linking Fortran executable SEM1D"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/SEM1D.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

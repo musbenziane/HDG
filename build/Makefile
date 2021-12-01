@@ -129,6 +129,30 @@ SEM1D/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/build
 .PHONY : SEM1D/fast
 
+compute_flux.o: compute_flux.f90.o
+.PHONY : compute_flux.o
+
+# target to build an object file
+compute_flux.f90.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/compute_flux.f90.o
+.PHONY : compute_flux.f90.o
+
+compute_flux.i: compute_flux.f90.i
+.PHONY : compute_flux.i
+
+# target to preprocess a source file
+compute_flux.f90.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/compute_flux.f90.i
+.PHONY : compute_flux.f90.i
+
+compute_flux.s: compute_flux.f90.s
+.PHONY : compute_flux.s
+
+# target to generate assembly for a file
+compute_flux.f90.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/compute_flux.f90.s
+.PHONY : compute_flux.f90.s
+
 connectivity_matrix.o: connectivity_matrix.f90.o
 .PHONY : connectivity_matrix.o
 
@@ -152,6 +176,30 @@ connectivity_matrix.s: connectivity_matrix.f90.s
 connectivity_matrix.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/connectivity_matrix.f90.s
 .PHONY : connectivity_matrix.f90.s
+
+dgDefine.o: dgDefine.f90.o
+.PHONY : dgDefine.o
+
+# target to build an object file
+dgDefine.f90.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/dgDefine.f90.o
+.PHONY : dgDefine.f90.o
+
+dgDefine.i: dgDefine.f90.i
+.PHONY : dgDefine.i
+
+# target to preprocess a source file
+dgDefine.f90.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/dgDefine.f90.i
+.PHONY : dgDefine.f90.i
+
+dgDefine.s: dgDefine.f90.s
+.PHONY : dgDefine.s
+
+# target to generate assembly for a file
+dgDefine.f90.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/dgDefine.f90.s
+.PHONY : dgDefine.f90.s
 
 dgSolve.o: dgSolve.f90.o
 .PHONY : dgSolve.o
@@ -369,6 +417,30 @@ ricker.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/ricker.f90.s
 .PHONY : ricker.f90.s
 
+semDefine.o: semDefine.f90.o
+.PHONY : semDefine.o
+
+# target to build an object file
+semDefine.f90.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/semDefine.f90.o
+.PHONY : semDefine.f90.o
+
+semDefine.i: semDefine.f90.i
+.PHONY : semDefine.i
+
+# target to preprocess a source file
+semDefine.f90.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/semDefine.f90.i
+.PHONY : semDefine.f90.i
+
+semDefine.s: semDefine.f90.s
+.PHONY : semDefine.s
+
+# target to generate assembly for a file
+semDefine.f90.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SEM1D.dir/build.make CMakeFiles/SEM1D.dir/semDefine.f90.s
+.PHONY : semDefine.f90.s
+
 semSolve.o: semSolve.f90.o
 .PHONY : semSolve.o
 
@@ -450,9 +522,15 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... SEM1D"
+	@echo "... compute_flux.o"
+	@echo "... compute_flux.i"
+	@echo "... compute_flux.s"
 	@echo "... connectivity_matrix.o"
 	@echo "... connectivity_matrix.i"
 	@echo "... connectivity_matrix.s"
+	@echo "... dgDefine.o"
+	@echo "... dgDefine.i"
+	@echo "... dgDefine.s"
 	@echo "... dgSolve.o"
 	@echo "... dgSolve.i"
 	@echo "... dgSolve.s"
@@ -480,6 +558,9 @@ help:
 	@echo "... ricker.o"
 	@echo "... ricker.i"
 	@echo "... ricker.s"
+	@echo "... semDefine.o"
+	@echo "... semDefine.i"
+	@echo "... semDefine.s"
 	@echo "... semSolve.o"
 	@echo "... semSolve.i"
 	@echo "... semSolve.s"

@@ -63,5 +63,20 @@
   "directory": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build",
   "command": "/usr/bin/f95   -fopenmp -Wall -O0 -g3 -c \"/home/mus/Documents/Modelling/Modelling Projects Git/HDG/dgSolve.f90\" -o CMakeFiles/SEM1D.dir/dgSolve.f90.o",
   "file": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/dgSolve.f90"
+},
+{
+  "directory": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build",
+  "command": "/usr/bin/f95   -fopenmp -Wall -O0 -g3 -c \"/home/mus/Documents/Modelling/Modelling Projects Git/HDG/semDefine.f90\" -o CMakeFiles/SEM1D.dir/semDefine.f90.o",
+  "file": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/semDefine.f90"
+},
+{
+  "directory": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build",
+  "command": "/usr/bin/f95   -fopenmp -Wall -O0 -g3 -c \"/home/mus/Documents/Modelling/Modelling Projects Git/HDG/dgDefine.f90\" -o CMakeFiles/SEM1D.dir/dgDefine.f90.o",
+  "file": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/dgDefine.f90"
+},
+{
+  "directory": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build",
+  "command": "/usr/bin/f95   -fopenmp -Wall -O0 -g3 -c \"/home/mus/Documents/Modelling/Modelling Projects Git/HDG/compute_flux.f90\" -o CMakeFiles/SEM1D.dir/compute_flux.f90.o",
+  "file": "/home/mus/Documents/Modelling/Modelling Projects Git/HDG/compute_flux.f90"
 }
 ]

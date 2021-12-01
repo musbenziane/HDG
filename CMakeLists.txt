@@ -10,5 +10,6 @@ endif()
 
 enable_language(Fortran)
 add_executable(SEM1D main.f90 connectivity_matrix.f90  lagrangep.f90 legendrep.f90 lagrangeprime.f90
-        readmodelfiles1D.f90 shapefunc.f90 mapmodel.f90 ricker.f90 gll_library.f90  semSolve.f90 shapefuncDG.f90 dgSolve.f90)
+        readmodelfiles1D.f90 shapefunc.f90 mapmodel.f90 ricker.f90 gll_library.f90  semSolve.f90 shapefuncDG.f90 dgSolve.f90
+        semDefine.f90 dgDefine.f90 compute_flux.f90 )
 

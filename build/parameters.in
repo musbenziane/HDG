@@ -5,10 +5,10 @@ testing              ! Model name prefix (model names: prefix_vp, prefix_rho)
 30.                  ! Element size
 20.                  ! Wavelet's peak frequency
 0.0002               ! Time step
-10000                ! Number of time steps
-100                  ! Source location (element number)
+20000                ! Number of time steps
+150                  ! Source location (element number)
 4                    ! Source location (gll point)
-10                   ! Snapshot interval
+50                   ! Snapshot interval
 1                    ! [1/2/3/4] 1: Free surface, 2: Rigid wall, 3: Periodic, 4: Sponge 
 0                    ! Boundary condition only on the left side [not for periodic BC | on the right side for absorbing]
 20                   ! Sponge layer width in gll points

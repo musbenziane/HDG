@@ -1,5 +1,7 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/SEM1D.dir/compute_flux.f90.o"
   "CMakeFiles/SEM1D.dir/connectivity_matrix.f90.o"
+  "CMakeFiles/SEM1D.dir/dgDefine.f90.o"
   "CMakeFiles/SEM1D.dir/dgSolve.f90.o"
   "CMakeFiles/SEM1D.dir/gll_library.f90.o"
   "CMakeFiles/SEM1D.dir/lagrangep.f90.o"
@@ -9,6 +11,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/SEM1D.dir/mapmodel.f90.o"
   "CMakeFiles/SEM1D.dir/readmodelfiles1D.f90.o"
   "CMakeFiles/SEM1D.dir/ricker.f90.o"
+  "CMakeFiles/SEM1D.dir/semDefine.f90.o"
   "CMakeFiles/SEM1D.dir/semSolve.f90.o"
   "CMakeFiles/SEM1D.dir/shapefunc.f90.o"
   "CMakeFiles/SEM1D.dir/shapefuncDG.f90.o"
