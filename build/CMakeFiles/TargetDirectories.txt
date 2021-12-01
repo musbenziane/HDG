@@ -1,3 +1,0 @@
-/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build/CMakeFiles/SEM1D.dir
-/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build/CMakeFiles/edit_cache.dir
-/home/mus/Documents/Modelling/Modelling Projects Git/HDG/build/CMakeFiles/rebuild_cache.dir
