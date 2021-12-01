@@ -37,7 +37,6 @@ subroutine semSolve(SET, SEM, it)
     SEM%udotnew(:)  = SEM%udot(:) + (SET%dt/2) * (SEM%uddot(:) + SEM%uddotnew(:))
     !$OMP END PARALLEL WORKSHARE
 
-    !$OMP PARALLEL DO PRIVATE(el,i,j) SHARED(SEM,SET) SCHEDULE(static) 
     do el=1,SEM%ne
         do i=1,SET%N+1
             tmp = 0.
@@ -52,7 +51,6 @@ subroutine semSolve(SET, SEM, it)
 
         end do 
     end do
-    !$OMP END PARALLEL DO
 
     ! Traction at the boundary
     SEM%tauLold = SEM%sigmaold(SET%Cij(SET%N+1,SEM%ne))

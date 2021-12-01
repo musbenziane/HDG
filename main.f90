@@ -103,7 +103,7 @@ PROGRAM HDG
     PRINT*,"Source location [nel/ngll]-> ",SET%esrc, SET%gsrc
     PRINT*,"Snapshot INterval         -> ",SET%isnap
 
-    
+
     SEM%ngll  = SET%N * SEM%ne + 1                                  ! Total GLL poINts
     DG%ngll   = (SET%N + 1) * DG%ne 
     SET%Jc    = SET%h / 2                                           ! Jacobian for structured 1D mesh
@@ -186,7 +186,6 @@ PROGRAM HDG
             SEM%Uout(k,:)    = SEM%u
             SEM%Udotout(k,:) = SEM%udot
             SEM%sigmaout(k,:)= SEM%sigma
-
             c = 1
             do i=1,DG%ne
                 do j=1,SET%N+1
