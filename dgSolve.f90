@@ -1,78 +1,55 @@
-subroutine dgSolve(SET,DG)
-!$ use omp_lib
-implicit none
-    TYPE SETup
-        SEQUENCE
-        INTEGER                                         :: N, nt, esrc, gsrc, isnap
-        REAL(kind=8)                                    :: h, f0, dt, Jc, Jci
-        REAL(kind=8), DIMENSION(:),   ALLOCATABLE       :: v1D, rho1D, src, xi, wi
-        REAL(kind=8), DIMENSION(:,:), ALLOCATABLE       :: lprime
-        integer, dimension(:,:), allocatable            :: Cij
-    END TYPE
+subroutine dgSolve(SET,DG,SEM,it)
+    !$USE OMP_LIB
+    implicit none
+        INCLUDE "set.h"
+        INCLUDE "dg.h"
+        INCLUDE "sem.h"
 
 
-
-    TYPE dgProblem
-        SEQUENCE
-        REAL(kind=8), DIMENSION(:), ALLOCATABLE                :: Z
-        REAL(KIND=8), dimension(:,:), ALLOCATABLE              :: v1D, rho1D, mu1Dgll, v1Dgll, rho1Dgll, xgll, Minv, &
-                                                                  Ke, sigma, v
-        real(kind=8), dimension(:,:,:), allocatable            :: Al, Ar, u, unew, k1, k2, flux, source
-        INTEGER                                                :: ne, ngll
-    END TYPE
-
-    
+    TYPE(semProblem)                                           :: SEM
     TYPE(dgProblem)                                            :: DG
     TYPE(SETup)                                                :: SET
-    INTEGER                                                    :: i, j, k, l, el, it
+    INTEGER                                                    :: i, j, el, it
 
+    CALL zwgljd(SET%xi,SET%wi,SET%N+1,0.,0.)                    ! GettINg GLL poINts and weights
 
+    IF (SET%esrc .gt. SEM%ne) THEN
+        DG%source(SET%esrc,SET%gsrc,2) =  SET%src(it) * SET%wi(SET%gsrc) * SET%Jc
+    END IF
 
+    call compute_flux(DG%ne,DG%u,SET%N,DG%Al,DG%Ar,DG%flux,SEM)
 
-
-
-
-
-
-
-
-    !##########################################
-    !####### Construct the mass matrix ########
-    !##########################################
-
-    do i=1,SET%N+1
-        DG%Minv(i,i) = 1. / (SET%wi(i) * SET%Jc)
+    !$OMP PARALLEL DO PRIVATE(el) SHARED(SET,DG) SCHEDULE(static)
+    do el=2,DG%ne-1
+        DG%k1(el,:,1)   = MATMUL(DG%Minv,(-DG%mu(el) * MATMUL(DG%Ke, DG%u(el,:,2))) - DG%flux(el,:,1) + DG%source(el,:,1))
+        DG%k1(el,:,2)   = MATMUL(DG%Minv,(-1. / SET%rho1D(el)) * MATMUL(DG%Ke,DG%u(el,:,1)) - DG%flux(el,:,2) &
+                                                                                            + DG%source(el,:,2))
     end do
+    !$OMP END PARALLEL DO 
 
-    !##########################################
-    !##### Construct the stiffness matrix #####
-    !##########################################
-
-    do i=1,SET%N+1
-        do j=1,SET%N+1
-               DG%Ke(i,j) = SET%wi(j) * SET%lprime(i,j)
-        end do
-    end do
-
-
-    !##########################################
-    !##### Construct the Flux matrices    #####
-    !##########################################
-
-    DG%Z = SET%rho1D * SET%v1D
-
-    !$OMP PARALLEL DO PRIVATE(i) SHARED(SET,DG) SCHEDULE(static)
-    do i=1,DG%ne-2
-        DG%Ar(i,1,1) =  .5 * SET%v1D(i)
-        DG%Ar(i,1,2) = -.5 * DG%Z(i) * SET%v1D(i)
-        DG%Ar(i,2,1) = -.5 * SET%v1D(i) / DG%Z(i)
-        DG%Ar(i,2,2) =  .5 * SET%v1D(i)
-
-        DG%Al(i,1,1) = -.5 * SET%v1D(i)
-        DG%Al(i,1,2) = -.5 * DG%Z(i) * SET%v1D(i)
-        DG%Al(i,2,1) = -.5 * SET%v1D(i) / DG%Z(i)
-        DG%Al(i,2,2) = -.5 * SET%v1D(i);
+    !$OMP PARALLEL DO PRIVATE(el) SHARED(SET,DG) SCHEDULE(static)
+    do el=2,DG%ne-2
+        DG%unew(el,:,1) = SET%dt * MATMUL(DG%Minv,(-DG%mu(el) * MATMUL(DG%Ke,DG%u(el,:,2))) - &
+                                          DG%flux(el,:,1) + DG%source(el,:,1)) + DG%u(el,:,1)
+        DG%unew(el,:,2) = SET%dt * MATMUL(DG%Minv,(-1. / SET%rho1D(el)) * MATMUL(DG%Ke,DG%u(el,:,1)) - &
+                                          DG%flux(el,:,2) + DG%source(el,:,2)) + DG%u(el,:,2)
     end do
     !$OMP END PARALLEL DO
 
-end subroutine
+    call compute_flux(DG%ne,DG%unew,SET%N,DG%Al,DG%Ar,DG%flux,SEM)
+
+    !$OMP PARALLEL DO PRIVATE(el) SHARED(SET,DG) SCHEDULE(static)
+    do el=2,DG%ne-2
+        DG%k2(el,:,1)   = MATMUL(DG%Minv,(-DG%mu(el) * MATMUL(DG%Ke, DG%unew(el,:,2))) -  &
+                                                              DG%flux(el,:,1) + DG%source(el,:,1))
+        DG%k2(el,:,2)   = MATMUL(DG%Minv,(-1. / SET%rho1D(el)) * MATMUL(DG%Ke,DG%unew(el,:,1)) - &
+                                                                        DG%flux(el,:,2) + DG%source(el,:,2))
+    end do
+    !$OMP END PARALLEL DO
+
+    DG%unew = DG%u + .5 * SET%dt * (DG%k1 + DG%k2)
+    DG%u    = DG%unew
+
+        
+    
+    end subroutine

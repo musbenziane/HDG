@@ -2,40 +2,18 @@ PROGRAM HDG
     
     !$ USE OMP_LIB
     IMPLICIT NONE
-
+        
+    INCLUDE "sem.h"
+    INCLUDE "set.h"
+    INCLUDE "dg.h"
+    
     INTERFACE connectivity_matrix
         FUNCTION connectivity_matrix(N,ne)
             INTEGER, INTENT(IN)                         :: N, ne
             INTEGER connectivity_matrix(N+1,ne)
         END FUNCTION
     END INTERFACE
-    
-    TYPE SETup
-        SEQUENCE
-        INTEGER                                         :: N, nt, esrc, gsrc, isnap
-        REAL(kind=8)                                    :: h, f0, dt, Jc, Jci
-        REAL(kind=8), DIMENSION(:),   ALLOCATABLE       :: v1D, rho1D, src, xi, wi
-        REAL(kind=8), DIMENSION(:,:), ALLOCATABLE       :: lprime
-        integer, dimension(:,:), allocatable            :: Cij
 
-    END TYPE
-
-    TYPE semProblem
-        SEQUENCE
-        REAL(kind=8), dimension(:),   ALLOCATABLE       :: mu1Dgll, v1Dgll, rho1Dgll, M, xgll, u, uold, unew, F, &
-                                                           udot, udotnew, uddot, uddotnew, sigma, recsigma, tauL, Me 
-        REAL(kind=8), dimension(:,:), ALLOCATABLE       :: Minv, Kg, Ke, Uout, Udotout, sigmaout
-        INTEGER                                         :: ne, ngll
-    END TYPE   
-
-    TYPE dgProblem
-        SEQUENCE
-        REAL(kind=8), DIMENSION(:), ALLOCATABLE                :: Z
-        REAL(KIND=8), dimension(:,:), ALLOCATABLE              :: v1D, rho1D, mu1Dgll, v1Dgll, rho1Dgll, xgll, Minv, &
-                                                                  Ke, sigma, v
-        real(kind=8), dimension(:,:,:), allocatable            :: Al, Ar, u, unew, k1, k2, flux, source
-        INTEGER                                                :: ne, ngll
-    END TYPE
 
     TYPE(SETup)                                                :: SET
     TYPE(semProblem)                                           :: SEM
@@ -44,7 +22,7 @@ PROGRAM HDG
     REAL (KIND=8)                                              :: time, t_cpu_0, t_cpu_1, t_cpu, tmp, tmpBC, attConst, sd
                                                             
     REAL (KIND=8), dimension(:), allocatable                   ::  g
-    INTEGER                                                    :: i, j, k, l, it, el, reclsnaps
+    INTEGER                                                    :: i, j, k, l, it, el, c, reclsnaps
     INTEGER                                                    :: ir, t0, t1, bc, sbc, gWidth, IC
     character(len=40)                                          :: filename, filecheck, outname, modnameprefix
     !$ INTEGER                                                 :: n_workers
@@ -130,20 +108,19 @@ PROGRAM HDG
     DG%ngll   = (SET%N + 1) * DG%ne 
     SET%Jc    = SET%h / 2                                           ! Jacobian for structured 1D mesh
     SET%Jci   = 1 / SET%Jc                                          ! Jacobian INverse
+    SET%ne    = SEM%ne + DG%ne
 
-
-    ALLOCATE(SET%Cij(SET%N+1,SEM%ne))                               ! Connectivity matrix
     ALLOCATE(SET%xi(SET%N+1))                                       ! GLL poINts
     ALLOCATE(SET%wi(SET%N+1))                                       ! GLL Quadrature weights
+    ALLOCATE(SET%Cij(SET%N+1,SEM%ne))                               ! Connectivity matrix
     ALLOCATE(SET%v1D(SEM%ne))                                       ! 1D velocity model IN elements
     ALLOCATE(SET%rho1D(SEM%ne))                                     ! Density velocity model IN elements
     ALLOCATE(SET%lprime(SET%N+1,SET%N+1))                           ! Dervatives of Lagrange polynomials
 
     !##########################################
-    !############ SEM SOLVER INIT #############
+    !######### SEM &  DG SOLVER INIT ##########
     !##########################################
-
-
+    ! SEM var allocation
     ALLOCATE(SEM%rho1Dgll(SEM%ngll))                                        ! 1D density model mapped
     ALLOCATE(SEM%v1Dgll(SEM%ngll))                                          ! 1D velocity mapped
     ALLOCATE(SEM%M(SEM%ngll))                                               ! Global mass matrix IN vector form
@@ -155,8 +132,9 @@ PROGRAM HDG
     ALLOCATE(SEM%unew(SEM%ngll),&                                           ! displacement vecotr at time t - dt
              SEM%uddotnew(SEM%ngll), & 
              SEM%udotnew(SEM%ngll))
-    ALLOCATE(SEM%uddot(SEM%ngll),    &
-             SEM%udot(SEM%ngll), SEM%sigma(SEM%ngll))
+    ALLOCATE(SEM%uddot(SEM%ngll), SEM%udot(SEM%ngll))
+    ALLOCATE(SEM%sigma(SEM%ngll), SEM%sigmaold(SEM%ngll), SEM%sigmanew(SEM%ngll))
+    ALLOCATE(SEM%tauL(SEM%ngll),SEM%tauLold(SEM%ngll),SEM%tauLnew(SEM%ngll),SEM%T(SEM%ngll))
     ALLOCATE(SEM%uold(SEM%ngll))                                            ! displacement vector at time t + dt
     ALLOCATE(SET%src(SET%nt))                                               ! Source time FUNCTION
     ALLOCATE(SEM%F(SEM%ngll))                                               ! External force
@@ -166,12 +144,9 @@ PROGRAM HDG
     ALLOCATE(SEM%mu1Dgll(SEM%ngll))                                         ! Shear modulus mapped
     ALLOCATE(SEM%xgll(SEM%ngll))                                            ! Array for global mappINg
     ALLOCATE(g(SEM%ngll))
-    ALLOCATE(SEM%tauL(SEM%ngll), SEM%recsigma(SET%nt))
+    ALLOCATE(SEM%recsigma(SET%nt))
    
-
-    !##########################################
-    !############ DG SOLVER INIT  #############
-    !##########################################
+    ! DG var allocation
     ALLOCATE(DG%Z(DG%ne))                                                                 ! Impepdences   
     ALLOCATE(DG%xgll(DG%ne,SET%N+1))                                                      ! Array for global mapping
     ALLOCATE(DG%Minv(SET%N+1,SET%N+1))                                                    ! Elemental mass matrix
@@ -186,15 +161,54 @@ PROGRAM HDG
     
     SET%Cij  = connectivity_matrix(SET%N,SEM%ne)
 
-    CALL lagrangeprime(SET%N,SET%lprime)                                    ! Lagrange polynomials derivatives
     CALL zwgljd(SET%xi,SET%wi,SET%N+1,0.,0.)                                ! GettINg GLL poINts and weights
-    CALL READmodelfiles1D(SET%v1D, SET%rho1D, SEM%ne,modnameprefix)         ! READINg model files
+    CALL lagrangeprime(SET%N,SET%lprime)                                    ! Lagrange polynomials derivatives
+
+    CALL readmodelfiles1D(SET%v1D, SET%rho1D, SEM%ne,modnameprefix)         ! READINg model files
     CALL shapefunc(SET%N,SET%h,SEM%ne,SET%Cij,SEM%xgll)                     ! Global domaIN mappINg
     CALL shapefuncDG(SET%N,SET%h,DG%ne, DG%xgll)                            ! Global domain mapping
     CALL mapmodel(SET%N,SEM%ne,SET%rho1D,SET%v1D,SEM%rho1Dgll,SEM%v1Dgll)   ! MappINg models
     CALL ricker(SET%nt,SET%f0,SET%dt,SET%src)                               ! Source time FUNCTION
 
-    CALL semSolve(SET,SEM)
+
+    ! DG & SEM Matrices setup
+    CALL semDefine(SET,SEM)
+    CALL dgDefine(SET, DG)
+
+    DO it=1,SET%nt 
+        
+        CALL semSolve(SET,SEM,it)
+
+        CALL dgSolve(SET, DG, SEM, it)
+
+        if (mod(it,SET%isnap) == 0) then
+            k = k + 1
+            SEM%Uout(k,:)    = SEM%u
+            SEM%Udotout(k,:) = SEM%udot
+            SEM%sigmaout(k,:)= SEM%sigma
+
+            c = 1
+            do i=1,DG%ne
+                do j=1,SET%N+1
+                    DG%sigma(k,SET%Cij(j,i)) = DG%u(i,j,1)
+                    DG%v(k,SET%Cij(j,i))     = DG%u(i,j,2)
+                    c = c + 1
+                end do
+            end do
+        end if
+
+
+        if (mod(it,NINT(SET%nt/10.))==0) then
+            print*,"At time sample ->",it, "/",SET%nt
+        end if
+
+    END DO
+    
+
+
+
+
+
 
 
     write(*,*) "##########################################"
@@ -224,6 +238,23 @@ PROGRAM HDG
     close(18)
 
    
+
+
+
+    inquire(iolength=reclsnaps) DG%sigma
+    outname = "OUTPUT/DG_snapshots_Sigma.bin"
+
+    open(19,file=outname,access="direct",recl=reclsnaps)
+    write(19,rec=1) DG%sigma
+    close(19)
+
+    outname = "OUTPUT/DG_snapshots_V.bin"
+    open(20,file=outname,access="direct",recl=reclsnaps)
+    write(20,rec=1) DG%v
+    close(20)
+
+
+
     ! Temps elapsed final.
     call system_clock(count=t1, count_rate=ir)
     time = real(t1 - t0,kind=8) / real(ir,kind=8)

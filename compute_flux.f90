@@ -1,15 +1,18 @@
-subroutine compute_flux(ne,u,N,Al,Ar,flux)
+subroutine compute_flux(ne,u,N,Al,Ar,flux,SEM)
     !$ use omp_lib
     implicit none
-    integer, intent(in)          :: ne, N
-    real(kind=8), intent(in)     :: u(ne,N+1,2), Al(ne,2,2), Ar(ne,2,2)
-    real(kind=8), intent(out)    :: flux(ne,N+1,2)
+    INCLUDE "sem.h"
 
-    integer                      :: i
-    real(kind=8)                 :: zeros(2)
+    TYPE(semProblem), INTENT(INOUT)                            :: SEM
+    integer, intent(in)                                        :: ne, N
+    real(kind=8), intent(in)                                   :: u(ne,N+1,2), Al(ne,2,2), Ar(ne,2,2)
+    real(kind=8), intent(out)                                  :: flux(ne,N+1,2)
+
+    integer                                                    :: i
+    real(kind=8)                                               :: zeros(2),boundaryflux(2)
 
 
-    flux(:,:,:)   = 0.
+    flux(:,:,:) = 0.
     zeros(:)    = 0.
 
     !##########################################
@@ -28,7 +31,13 @@ subroutine compute_flux(ne,u,N,Al,Ar,flux)
     !##########################################
     !#####  At the  domain's boundaries  ######
     !##########################################
-    flux(1,1,:)         = MATMUL(RESHAPE(Ar(1,:,:),(/2,2/)), zeros)    + &
+
+    boundaryflux(1)     = SEM%sigma(SEM%ngll)
+    boundaryflux(2)     = SEM%udot(SEM%ngll)
+
+    SEM%T(SEM%ngll)     = u(1,1,1)
+
+    flux(1,1,:)         = MATMUL(RESHAPE(Ar(1,:,:),(/2,2/)), RESHAPE(-boundaryflux,(/2/)))    + &
                           MATMUL(RESHAPE(Al(1,:,:),(/2,2/)), RESHAPE(-u(1  ,1,:),(/2/)))
     flux(1,N+1,:)       = MATMUL(RESHAPE(Ar(1,:,:),(/2,2/)), RESHAPE( u(1,N+1,:),(/2/))) +   &
                           MATMUL(RESHAPE(Al(1,:,:),(/2,2/)), RESHAPE( u(2,1,:),(/2/)))
