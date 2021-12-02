@@ -164,8 +164,8 @@ PROGRAM HDG
     ALLOCATE(SET%xi(SET%N+1))                                       ! GLL poINts
     ALLOCATE(SET%wi(SET%N+1))                                       ! GLL Quadrature weights
     ALLOCATE(SET%Cij(SET%N+1,SEM%ne))                               ! Connectivity matrix
-    ALLOCATE(SET%v1D(SEM%ne))                                       ! 1D velocity model IN elements
-    ALLOCATE(SET%rho1D(SEM%ne))                                     ! Density velocity model IN elements
+    ALLOCATE(SET%v1D(SET%ne))                                       ! 1D velocity model IN elements
+    ALLOCATE(SET%rho1D(SET%ne))                                     ! Density velocity model IN elements
     ALLOCATE(SET%lprime(SET%N+1,SET%N+1))                           ! Dervatives of Lagrange polynomials
 
     !##########################################
@@ -215,10 +215,10 @@ PROGRAM HDG
     CALL zwgljd(SET%xi,SET%wi,SET%N+1,0.,0.)                                ! GettINg GLL poINts and weights
     CALL lagrangeprime(SET%N,SET%lprime)                                    ! Lagrange polynomials derivatives
 
-    CALL readmodelfiles1D(SET%v1D, SET%rho1D, SEM%ne,modnameprefix)         ! READINg model files
+    CALL readmodelfiles1D(SET%v1D, SET%rho1D, SET%ne,modnameprefix)         ! READINg model files
     CALL shapefunc(SET%N,SET%h,SEM%ne,SET%Cij,SEM%xgll)                     ! Global domaIN mappINg
     CALL shapefuncDG(SET%N,SET%h,DG%ne, DG%xgll)                            ! Global domain mapping
-    CALL mapmodel(SET%N,SEM%ne,SET%rho1D,SET%v1D,SEM%rho1Dgll,SEM%v1Dgll)   ! MappINg models
+    CALL mapmodel(SET%N,SET%ne,SEM%ne,SET%rho1D(1:SEM%ne),SET%v1D(1:SEM%ne),SEM%rho1Dgll,SEM%v1Dgll)   ! MappINg models
     CALL ricker(SET%nt,SET%f0,SET%dt,SET%src)                               ! Source time FUNCTION
 
 
@@ -245,7 +245,7 @@ PROGRAM HDG
     write(*,*)"##########################################"
     lambdamin = minval(SET%v1D)/(SET%f0*2.5)
 
-    print"(a32,f3.1)", " Elements per minimum wavelength ->", lambdamin/SET%h
+    print"(a32,f6.2)", " Elements per minimum wavelength ->", lambdamin/SET%h
 
     if ((lambdamin/SET%h)<1) then
         print*,"Element size is too large"

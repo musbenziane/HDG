@@ -18,7 +18,7 @@ subroutine semDefine(SET, SEM)
 
     do i=1,SEM%ne
         do j=1,SET%N+1
-            SEM%Me(j)           = SEM%rho1Dgll(SET%Cij(j,i)) * SET%wi(j) * SET%Jc   ! Elemental mass matrix construction
+            SEM%Me(j)           =  SEM%rho1Dgll(SET%Cij(j,i)) * SET%wi(j) * SET%Jc   ! Elemental mass matrix construction
             SEM%M(SET%Cij(j,i)) =  SEM%M(SET%Cij(j,i)) + SEM%Me(j)                  ! Filling the global mass matrix
         end do
     end do
@@ -38,8 +38,9 @@ subroutine semDefine(SET, SEM)
 
 
     SEM%Kg(:,:) = 0
-    !$omp parallel do private(el,i,j,k,sum) shared(SEM,SET) schedule(static)
     do el=1,SEM%ne
+        !$omp parallel do private(i,j,k,sum) shared(SEM,SET) schedule(static)
+
         do i=1,SET%N+1                                    ! Elemental stifness matrix
             do j=1,SET%N+1
                 sum = 0.
@@ -50,15 +51,17 @@ subroutine semDefine(SET, SEM)
                 SEM%Ke(i,j) = sum
             end do
         end do
+        !$omp end parallel do
 
+        !$omp parallel do private(i,j) shared(SEM,SET) schedule(static)
         do i=1,SET%N+1                                      ! Global assembly
             do j=1,SET%N+1
                 SEM%Kg(SET%Cij(i,el),SET%Cij(j,el)) = SEM%Kg(SET%Cij(i,el),SET%Cij(j,el)) + SEM%Ke(i,j)
             end do
         end do
-    
+        !$omp end parallel do
+
     end do
-    !$omp end parallel do
 
     SEM%uold(:)     = 0.
     SEM%u(:)        = 0.
