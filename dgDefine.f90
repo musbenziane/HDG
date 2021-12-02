@@ -11,7 +11,7 @@ subroutine dgDefine(SET,DG)
         
         CALL zwgljd(SET%xi,SET%wi,SET%N+1,0.,0.)                    ! GettINg GLL poINts and weights
 
-        DG%mu = SET%v1D**2*SET%rho1D
+        DG%mu = SET%v1D(DG%ne:SET%ne)**2*SET%rho1D(DG%ne:SET%ne)
 
         !##########################################
         !####### Construct the mass matrix ########
@@ -35,22 +35,23 @@ subroutine dgDefine(SET,DG)
         !##########################################
         !##### Construct the Flux matrices    #####
         !##########################################
+        j = DG%ne
+
+        DG%Z = SET%rho1D(DG%ne:SET%ne) * SET%v1D(DG%ne:SET%ne)
     
-        DG%Z = SET%rho1D * SET%v1D
-    
-        !$OMP PARALLEL DO PRIVATE(i) SHARED(SET,DG) SCHEDULE(static)
+
         do i=1,DG%ne-2
-            DG%Ar(i,1,1) =  .5 * SET%v1D(i)
-            DG%Ar(i,1,2) = -.5 * DG%Z(i) * SET%v1D(i)
-            DG%Ar(i,2,1) = -.5 * SET%v1D(i) / DG%Z(i)
-            DG%Ar(i,2,2) =  .5 * SET%v1D(i)
+            DG%Ar(i,1,1) =  .5 * SET%v1D(j)
+            DG%Ar(i,1,2) = -.5 * DG%Z(i) * SET%v1D(j)
+            DG%Ar(i,2,1) = -.5 * SET%v1D(j) / DG%Z(i)
+            DG%Ar(i,2,2) =  .5 * SET%v1D(j)
     
-            DG%Al(i,1,1) = -.5 * SET%v1D(i)
-            DG%Al(i,1,2) = -.5 * DG%Z(i) * SET%v1D(i)
-            DG%Al(i,2,1) = -.5 * SET%v1D(i) / DG%Z(i)
-            DG%Al(i,2,2) = -.5 * SET%v1D(i);
+            DG%Al(i,1,1) = -.5 * SET%v1D(j)
+            DG%Al(i,1,2) = -.5 * DG%Z(i) * SET%v1D(j)
+            DG%Al(i,2,1) = -.5 * SET%v1D(j) / DG%Z(i)
+            DG%Al(i,2,2) = -.5 * SET%v1D(j);
+            j = j + 1
         end do
-        !$OMP END PARALLEL DO
     
     
         
