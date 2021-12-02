@@ -32,6 +32,7 @@ subroutine compute_flux(ne,u,N,Al,Ar,flux,SEM,SET)
 
     !##########################################
     !#####  At the  domain's boundaries  ######
+    !#####      And coupling term        ######
     !##########################################
 
     boundaryflux(1)                                    = SEM%sigma(SET%Cij(N+1,SEM%ne))
