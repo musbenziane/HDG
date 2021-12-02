@@ -73,7 +73,6 @@ PROGRAM HDG
     LOGICAL                                                    :: OMPcheck = .false.
 
 
-
     WRITE(*,*) "##########################################"
     WRITE(*,*) "############### OPENMP     ###############"
     !$ OMPcheck = .true.
@@ -97,7 +96,6 @@ PROGRAM HDG
     WRITE(*,*) "##########################################"
     WRITE(*,*) "######## READINg SETmeters file #########"
     WRITE(*,*) "##########################################"
-
     
     PRINT*,"Is the SETmeters INput file (parameters.IN) [Yes/no]"
     READ(*,*) filecheck
@@ -118,6 +116,7 @@ PROGRAM HDG
         STOP
     END IF
 
+
     OPEN (2, file=filename, status = 'old')
     READ(2,*) modnameprefix
     READ(2,*) SET%N
@@ -130,7 +129,6 @@ PROGRAM HDG
     READ(2,*) SET%esrc
     READ(2,*) SET%gsrc
     READ(2,*) SET%isnap
-
 
     !##### Implementation on going, well copy paste, they have been already implemented on the seperate DG & SEM programs.
     READ(2,*) bc
@@ -161,6 +159,7 @@ PROGRAM HDG
     SET%Jc    = SET%h / 2                                           ! Jacobian for structured 1D mesh
     SET%Jci   = 1 / SET%Jc                                          ! Jacobian INverse
     SET%ne    = SEM%ne + DG%ne
+
 
     ALLOCATE(SET%xi(SET%N+1))                                       ! GLL poINts
     ALLOCATE(SET%wi(SET%N+1))                                       ! GLL Quadrature weights
@@ -223,12 +222,6 @@ PROGRAM HDG
     CALL ricker(SET%nt,SET%f0,SET%dt,SET%src)                               ! Source time FUNCTION
 
 
-    ! DG & SEM Matrices setup
-    CALL semDefine(SET,SEM)
-    CALL dgDefine(SET, DG)
-
-
-
     write(*,*)"##########################################"
     write(*,*)"############### CFL Check ################"
     write(*,*)"##########################################"
@@ -282,6 +275,11 @@ PROGRAM HDG
     end if
 
 
+    ! DG & SEM Matrices setup
+    CALL semDefine(SET,SEM)
+    CALL dgDefine(SET, DG)
+
+
     DO it=1,SET%nt 
         
         CALL semSolve(SET,SEM,it)
@@ -311,12 +309,6 @@ PROGRAM HDG
     END DO
     
 
-
-
-
-
-
-
     write(*,*) "##########################################"
     write(*,*) "######### Write solution binary ##########"
     write(*,*) "######### Solution in OUTPUT/   ##########"
@@ -343,10 +335,6 @@ PROGRAM HDG
     write(18,rec=1) SEM%sigmaout
     close(18)
 
-   
-
-
-
     inquire(iolength=reclsnaps) DG%sigma
     outname = "OUTPUT/DG_snapshots_Sigma.bin"
 
@@ -359,9 +347,7 @@ PROGRAM HDG
     write(20,rec=1) DG%v
     close(20)
 
-
-
-    ! Temps elapsed final.
+    ! Ellapse time
     call system_clock(count=t1, count_rate=ir)
     time = real(t1 - t0,kind=8) / real(ir,kind=8)
 
