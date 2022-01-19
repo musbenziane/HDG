@@ -37,9 +37,9 @@ subroutine compute_flux(ne,u,N,Al,Ar,flux,SEM,SET)
 
     boundaryflux(1)                                    = SEM%sigma(SET%Cij(N+1,SEM%ne))
     boundaryflux(2)                                    = SEM%udot(SET%Cij(N+1,SEM%ne))
-    SEM%T(SET%Cij(N+1,SEM%ne))       = u(1,1,1)
-    SEM%udot(SET%Cij(N+1,SEM%ne))    = u(1,1,2)
-    SEM%udotnew(SET%Cij(N+1,SEM%ne)) = u(1,1,2)
+    !SEM%T(SET%Cij(N+1,SEM%ne))       = u(1,1,1)
+    !SEM%udot(SET%Cij(N+1,SEM%ne))    = u(1,1,2)
+    !SEM%udotnew(SET%Cij(N+1,SEM%ne)) = u(1,1,2)
     
 
     flux(1,1,:)         = MATMUL(RESHAPE(Ar(1,:,:),(/2,2/)), RESHAPE(-boundaryflux,(/2/)))    + &

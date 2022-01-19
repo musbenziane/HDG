@@ -1,4 +1,21 @@
-    !###################################################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                !###################################################################################################################
     ! HDG (SEM & DG) Hybrod Solver with a regular mesh for the 1D elastic wave equation 
     ! NOTE: This program is yet to be tested against analytical solutions.
     ! 
@@ -65,7 +82,8 @@ PROGRAM HDG
     REAL (KIND=8)                                              :: CFL, mINdist, lambdamIN
     REAL (KIND=8)                                              :: time, t_cpu_0, t_cpu_1, t_cpu, attConst, sd
                                                             
-    REAL (KIND=8), dimension(:), allocatable                   ::  g
+    REAL (KIND=8), dimension(:), allocatable                   :: g
+    REAL (KIND=8), DIMENSION(:,:), ALLOCATABLE                 :: globalsol_s, globalsol_v
     INTEGER                                                    :: i, j, k, it, c, reclsnaps
     INTEGER                                                    :: ir, t0, t1, bc, sbc, gWidth, IC
     character(len=40)                                          :: filename, filecheck, outname, modnameprefix
@@ -161,9 +179,13 @@ PROGRAM HDG
     SET%ne    = SEM%ne + DG%ne
 
 
+
+    ALLOCATE(globalsol_s(NINT(REAL(SET%nt/SET%isnap)),SEM%ngll+DG%ngll))
+    ALLOCATE(globalsol_v(NINT(REAL(SET%nt/SET%isnap)),SEM%ngll+DG%ngll))
+
     ALLOCATE(SET%xi(SET%N+1))                                       ! GLL poINts
     ALLOCATE(SET%wi(SET%N+1))                                       ! GLL Quadrature weights
-    ALLOCATE(SET%Cij(SET%N+1,SEM%ne))                               ! Connectivity matrix
+    ALLOCATE(SET%Cij(SET%N+1,SET%ne))                               ! Connectivity matrix
     ALLOCATE(SET%v1D(SET%ne))                                       ! 1D velocity model IN elements
     ALLOCATE(SET%rho1D(SET%ne))                                     ! Density velocity model IN elements
     ALLOCATE(SET%lprime(SET%N+1,SET%N+1))                           ! Dervatives of Lagrange polynomials
@@ -221,7 +243,6 @@ PROGRAM HDG
     CALL mapmodel(SET%N,SET%ne,SEM%ne,SET%rho1D(1:SEM%ne),SET%v1D(1:SEM%ne),SEM%rho1Dgll,SEM%v1Dgll)   ! MappINg models
     CALL ricker(SET%nt,SET%f0,SET%dt,SET%src)                               ! Source time FUNCTION
 
-
     write(*,*)"##########################################"
     write(*,*)"############### CFL Check ################"
     write(*,*)"##########################################"
@@ -229,7 +250,7 @@ PROGRAM HDG
     mindist = SEM%xgll(2) - SEM%xgll(1)
     CFL = (SET%dt/mindist) * maxval(SET%v1D(:))
 
-    if (CFL > .8) then
+    if (CFL > .4) then
         print"(a14,f6.3)","CFL value is ",CFL
         print*,"Decrease time step, the program has been terminated"
         stop
@@ -279,12 +300,19 @@ PROGRAM HDG
     CALL semDefine(SET,SEM)
     CALL dgDefine(SET, DG)
 
-
+    k = 0
     DO it=1,SET%nt 
         
         CALL semSolve(SET,SEM,it)
 
         CALL dgSolve(SET, DG, SEM, it)
+
+
+
+        SEM%T(SET%Cij(SET%N+1,SEM%ne))       = DG%u(1,1,1)
+        SEM%udot(SET%Cij(SET%N+1,SEM%ne))    = DG%u(1,1,2)
+        !SEM%udotnew(SET%Cij(SET%N+1,SEM%ne)) = DG%unew(1,1,2)
+
 
         if (mod(it,SET%isnap) == 0) then
             k = k + 1
@@ -294,8 +322,8 @@ PROGRAM HDG
             c = 1
             do i=1,DG%ne
                 do j=1,SET%N+1
-                    DG%sigma(k,SET%Cij(j,i)) = DG%u(i,j,1)
-                    DG%v(k,SET%Cij(j,i))     = DG%u(i,j,2)
+                    DG%sigma(k,c) = DG%u(i,j,1)
+                    DG%v(k,c)     = DG%u(i,j,2)
                     c = c + 1
                 end do
             end do
@@ -308,6 +336,12 @@ PROGRAM HDG
 
     END DO
     
+    globalsol_s(:,1:SEM%ngll)          =  SEM%sigmaout
+    globalsol_s(:,SEM%ngll+1:DG%ngll)  =  DG%sigma
+
+    globalsol_v(:,1:SEM%ngll)          =  SEM%Udotout
+    globalsol_v(:,SEM%ngll+1:DG%ngll)  =  DG%v
+
 
     write(*,*) "##########################################"
     write(*,*) "######### Write solution binary ##########"
@@ -347,6 +381,20 @@ PROGRAM HDG
     write(20,rec=1) DG%v
     close(20)
 
+
+    inquire(iolength=reclsnaps) globalsol_s
+
+    outname = "OUTPUT/global_S.bin"
+    open(21,file=outname,access="direct",recl=reclsnaps)
+    write(21,rec=1) globalsol_s
+    close(21)
+
+    outname = "OUTPUT/global_V.bin"
+    open(22,file=outname,access="direct",recl=reclsnaps)
+    write(22,rec=1) globalsol_v
+    close(22)
+
+
     ! Ellapse time
     call system_clock(count=t1, count_rate=ir)
     time = real(t1 - t0,kind=8) / real(ir,kind=8)
@@ -365,40 +413,34 @@ PROGRAM HDG
 
 
 
-    DEALLOCATE(SET%xi)                                       
-    DEALLOCATE(SET%wi)                                       
-    DEALLOCATE(SET%Cij)                              
-    DEALLOCATE(SET%v1D)                                
-    DEALLOCATE(SET%rho1D)                                   
-    DEALLOCATE(SET%lprime)                         
-    DEALLOCATE(SEM%rho1Dgll)                                
-    DEALLOCATE(SEM%v1Dgll)                             
-    DEALLOCATE(SEM%M)                                      
-    DEALLOCATE(SEM%MINv)                              
-    DEALLOCATE(SEM%Me)                                     
-    DEALLOCATE(SEM%Kg)                            
-    DEALLOCATE(SEM%Ke)                                 
-    DEALLOCATE(SEM%u)                              
-    DEALLOCATE(SEM%unew, SEM%uddotnew, SEM%udotnew)
-    DEALLOCATE(SEM%uddot, SEM%udot)
-    DEALLOCATE(SEM%sigma, SEM%sigmaold, SEM%sigmanew)
-    DEALLOCATE(SEM%tauL,SEM%tauLold,SEM%tauLnew,SEM%T)
-    DEALLOCATE(SEM%uold)                                           
-    DEALLOCATE(SET%src)                                               
-    DEALLOCATE(SEM%F)                                               
-    DEALLOCATE(SEM%Uout)               
-    DEALLOCATE(SEM%Udotout, SEM%sigmaout)
-    DEALLOCATE(SEM%mu1Dgll)                                         
-    DEALLOCATE(SEM%xgll)                                            
-    DEALLOCATE(g)
-    DEALLOCATE(SEM%recsigma)
-    DEALLOCATE(DG%Z)                                                       
-    DEALLOCATE(DG%xgll)                                                  
-    DEALLOCATE(DG%Minv)                                             
-    DEALLOCATE(DG%Ke)                                                   
-    DEALLOCATE(DG%Ar,DG%Al)                                          
-    DEALLOCATE(DG%u,DG%unew)                              
-    DEALLOCATE(DG%k1,DG%k2,DG%source)
-    DEALLOCATE(DG%flux)                                   
-    DEALLOCATE(DG%sigma, DG%v)
+    !DEALLOCATE(DG%Z)                                                       
+    !DEALLOCATE(DG%xgll)                                                  
+    !DEALLOCATE(DG%Minv)                                             
+    !DEALLOCATE(DG%Ke)                                                   
+    !DEALLOCATE(DG%Ar,DG%Al)                                          
+    !DEALLOCATE(DG%u,DG%unew)                              
+    !DEALLOCATE(DG%k1,DG%k2,DG%source)
+    !DEALLOCATE(DG%flux)                                   
+    !DEALLOCATE(DG%sigma, DG%v)
+
+
+
+    !DEALLOCATE(globalsol_s,globalsol_v)
+
+    !DEALLOCATE(SET%xi)                                       
+    !DEALLOCATE(SET%wi)                                       
+    !DEALLOCATE(SET%Cij)                              
+    !DEALLOCATE(SET%v1D)                                
+    !DEALLOCATE(SET%lprime)   
+    !DEALLOCATE(SET%rho1D)                                   
+
+  
+                             
+    !DEALLOCATE(SEM%unew, SEM%uddotnew, SEM%udotnew,SEM%uold,SET%src,SEM%F &                                               
+    !          ,SEM%Uout, SEM%Udotout, SEM%sigmaout, SEM%mu1Dgll, SEM%recsigma &
+    !          ,SEM%MINv, SEM%Me, SEM%Kg, SEM%Ke, SEM%sigma, SEM%sigmaold, SEM%sigmanew &
+    !          ,SEM%tauL,SEM%tauLold,SEM%tauLnew,SEM%T, SEM%xgll, g, SEM%rho1Dgll, SEM%v1Dgll, & 
+    !          SEM%M, SEM%u, SEM%uddot, SEM%udot)
+
+
 END PROGRAM
