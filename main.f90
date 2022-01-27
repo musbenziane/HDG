@@ -95,7 +95,7 @@ PROGRAM HDG
 
 
     WRITE(*,*) "##########################################"
-    WRITE(*,*) "######## READINg SETmeters file #########"
+    WRITE(*,*) "######## Reading parameters file #########"
     WRITE(*,*) "##########################################"
     
     PRINT*,"Is the SETmeters INput file (parameters.IN) [Yes/no]"
