@@ -293,7 +293,6 @@ PROGRAM HDG
 
         SEM%T(SET%Cij(SET%N+1,SEM%ne))       = DG%u(1,1,1)
         SEM%udot(SET%Cij(SET%N+1,SEM%ne))    = DG%u(1,1,2)
-        !SEM%udotnew(SET%Cij(SET%N+1,SEM%ne)) = DG%unew(1,1,2)
 
 
         if (mod(it,SET%isnap) == 0) then
