@@ -232,7 +232,7 @@ PROGRAM HDG
     mindist = SEM%xgll(2) - SEM%xgll(1)
     CFL = (SET%dt/mindist) * maxval(SET%v1D(:))
 
-    if (CFL > .4) then
+    if (CFL > .3) then
         print"(a14,f6.3)","CFL value is ",CFL
         print*,"Decrease time step, the program has been terminated"
         stop
