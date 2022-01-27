@@ -98,7 +98,7 @@ PROGRAM HDG
     WRITE(*,*) "######## Reading parameters file #########"
     WRITE(*,*) "##########################################"
     
-    PRINT*,"Is the SETmeters INput file (parameters.IN) [Yes/no]"
+    PRINT*,"Is the parameters input file (parameters.in) [Yes/no]"
     READ(*,*) filecheck
 
     IF (filecheck=="Yes" .or. filecheck=="yes" .or. filecheck=="y" .or. &
