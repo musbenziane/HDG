@@ -131,7 +131,6 @@ PROGRAM HDG
     READ(2,*) SET%gsrc
     READ(2,*) SET%isnap
 
-    !##### Implementation on going, well copy paste, they have been already implemented on the seperate DG & SEM programs.
     READ(2,*) bc
     READ(2,*) sbc
     READ(2,*) gWidth
