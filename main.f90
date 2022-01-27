@@ -1,21 +1,4 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                !###################################################################################################################
+    !###################################################################################################################
     ! HDG (SEM & DG) Hybrod Solver with a regular mesh for the 1D elastic wave equation 
     ! NOTE: This program is yet to be tested against analytical solutions.
     ! 
